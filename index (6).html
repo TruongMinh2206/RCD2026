@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F3864">
+<title>Phiếu ghi nhận khách – RCD 2026</title>
+<style>
+  :root {
+    --navy: #1F3864; --navy-2: #2d4d85; --bg: #f3f5f9; --card: #fff; --text: #1d2433;
+    --muted: #6b7385; --line: #d9deea; --req: #c0392b; --ok: #1e7b3c; --ok-bg: #e3f4e8;
+    --warn: #9a2b1f; --warn-bg: #fbe4e1; --info: #1f5aa6; --info-bg: #e5eefb;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  header { background: var(--navy); color: #fff; padding: 14px 16px 12px;
+           position: sticky; top: 0; z-index: 5; }
+  header h1 { margin: 0; font-size: 17px; font-weight: 700; }
+  header p { margin: 2px 0 0; font-size: 13px; opacity: .8; }
+  main { max-width: 560px; margin: 0 auto; padding: 12px 16px 120px; }
+  .card { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 12px;
+          box-shadow: 0 1px 2px rgba(20,30,60,.06); }
+  .card h2 { margin: 0 0 10px; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--navy-2); }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  label, .label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .req { color: var(--req); }
+  input, select, textarea {
+    width: 100%; font: inherit; font-size: 16px; color: var(--text);
+    padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff;
+    -webkit-appearance: none; appearance: none;
+  }
+  select { background-image: linear-gradient(45deg, transparent 50%, #6b7385 50%), linear-gradient(135deg, #6b7385 50%, transparent 50%);
+           background-position: calc(100% - 18px) 52%, calc(100% - 13px) 52%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
+  textarea { min-height: 72px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--navy-2); outline-offset: 0; border-color: transparent; }
+  .invalid { border-color: var(--req) !important; background: #fff6f5; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pills input { position: absolute; opacity: 0; pointer-events: none; width: 1px; }
+  .pills label { margin: 0; font-weight: 500; padding: 10px 14px; border: 1px solid var(--line);
+                 border-radius: 999px; background: #fff; cursor: pointer; user-select: none; font-size: 15px; }
+  .pills input:checked + label { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .pills input:focus-visible + label { outline: 2px solid var(--navy-2); outline-offset: 2px; }
+  .pills.invalid { border-radius: 12px; outline: 1px solid var(--req); outline-offset: 4px; background: transparent; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .badge { display: none; margin-top: 8px; padding: 8px 10px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+  .badge.show { display: block; }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.info { background: var(--info-bg); color: var(--info); }
+  .badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line);
+         padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); z-index: 6; }
+  .bar-inner { max-width: 560px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+  .count { font-size: 13px; color: var(--muted); min-width: 64px; text-align: center; line-height: 1.2; }
+  .count b { display: block; font-size: 18px; color: var(--navy); }
+  button.primary { flex: 1; font: inherit; font-weight: 700; font-size: 17px; color: #fff; background: var(--ok);
+                   border: 0; border-radius: 12px; padding: 14px; cursor: pointer; }
+  button.primary:disabled { opacity: .6; }
+  .toast { position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); max-width: 528px;
+           margin: 0 auto; padding: 12px 14px; border-radius: 10px; font-weight: 600; font-size: 15px;
+           box-shadow: 0 6px 20px rgba(0,0,0,.15); display: none; z-index: 7; }
+  .toast.show { display: block; }
+  .toast.ok { background: var(--ok); color: #fff; }
+  .toast.err { background: var(--warn); color: #fff; }
+  .teambox { padding: 12px; border-radius: 10px; background: var(--info-bg); color: var(--info); font-weight: 600; }
+  .teambox.empty { background: #f0f2f6; color: var(--muted); font-weight: 400; }
+  .setup { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 12px; font-size: 14px; margin-bottom: 12px; display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Phiếu ghi nhận khách · RCD 2026</h1>
+  <p>Dermaxilic booth · <span class="req">*</span> là bắt buộc</p>
+</header>
+
+<main>
+  <div class="setup" id="setup">Chưa cấu hình đường dẫn Web app (WEB_APP_URL) trong file. Phiếu chưa gửi được.</div>
+
+  <form id="f" novalidate autocomplete="off">
+    <section class="card">
+      <h2>Người ghi nhận</h2>
+      <div class="field">
+        <label for="sale">Sale <span class="req">*</span></label>
+        <select id="sale" name="sale"></select>
+      </div>
+      <div class="field">
+        <span class="label">Team</span>
+        <div class="teambox" id="teamBox">Chọn tên sale để hiện team</div>
+        <input type="hidden" id="team" name="team">
+      </div>
+      <div class="field">
+        <label for="date">Ngày</label>
+        <input id="date" name="date" type="date">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Khách hàng</h2>
+      <div class="field">
+        <span class="label">Khách mới / cũ <span class="req">*</span></span>
+        <div class="pills" id="type" data-name="type"></div>
+      </div>
+      <div class="field">
+        <label for="name">Họ và tên <span class="req">*</span></label>
+        <input id="name" name="name" placeholder="VD: BS Nguyễn Văn A">
+      </div>
+      <div class="field">
+        <label for="phone">Số điện thoại <span class="req">*</span></label>
+        <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="VD: 0912345678">
+        <div class="badge" id="phoneBadge"></div>
+      </div>
+      <div class="field">
+        <span class="label">Nhóm khách <span class="req">*</span></span>
+        <div class="pills" id="group" data-name="group"></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="title">Chức danh</label>
+          <input id="title" name="title">
+        </div>
+        <div class="field">
+          <label for="city">Tỉnh/Thành</label>
+          <input id="city" name="city">
+        </div>
+      </div>
+      <div class="field">
+        <label for="org">Cơ sở / Đơn vị</label>
+        <input id="org" name="org">
+      </div>
+      <div class="field">
+        <label for="contact">Email / Kênh liên hệ</label>
+        <input id="contact" name="contact" placeholder="Email, Zalo, Facebook...">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Nhu cầu & tiềm năng</h2>
+      <div class="field">
+        <label for="need">Nhu cầu / mối quan tâm</label>
+        <textarea id="need" name="need"></textarea>
+      </div>
+      <div class="field">
+        <span class="label">Hướng hợp tác</span>
+        <div class="pills" id="direction" data-name="direction"></div>
+      </div>
+      <div class="field">
+        <span class="label">Mức độ tiềm năng</span>
+        <div class="pills" id="level" data-name="level"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Doanh số tại booth</h2>
+      <div class="row2">
+        <div class="field">
+          <label for="wholesale">Sỉ (đ)</label>
+          <input id="wholesale" name="wholesale" inputmode="numeric" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="retail">Lẻ (đ)</label>
+          <input id="retail" name="retail" inputmode="numeric" placeholder="0">
+        </div>
+      </div>
+      <div class="field">
+        <label for="note">Ghi chú</label>
+        <textarea id="note" name="note"></textarea>
+      </div>
+    </section>
+  </form>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="bar">
+  <div class="bar-inner">
+    <div class="count">Đã gửi<b id="count">0</b></div>
+    <button class="primary" id="submit" type="button">GỬI PHIẾU</button>
+  </div>
+</div>
+
+<script>
+/* ====== CẤU HÌNH: dán URL Web app (kết thúc bằng /exec) và mã truy cập ====== */
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxbotMEEk_lZ7_HA9vjo_ExfQwcmcbEiMLExA66UVxRYH9FpZPIXGCySWFPATRBirAH7A/exec';
+const API_KEY = 'rcd2026-dermaxilic';
+/* ========================================================================== */
+
+const DEFAULTS = {
+  sales: [
+    { name: 'Trần Phương Linh (Linh lớn)', team: 'Team Linh lớn' },
+    { name: 'Nguyễn Thị Huyền', team: 'Team Linh lớn' },
+    { name: 'Dương Khánh Ly', team: 'Team Linh lớn' },
+    { name: 'Nguyễn Vân Anh', team: 'Team Vân Anh' },
+    { name: 'Nguyễn Phương Hà My', team: 'Team Vân Anh' },
+    { name: 'Nguyễn Phương Linh (Linh bé)', team: 'Team Linh bé' },
+    { name: 'Nguyễn Thị Ngát', team: 'Team Linh bé' },
+    { name: 'Đỗ Hà Ngân', team: 'Team Linh bé' },
+    { name: 'Vũ Thị Mai', team: 'Team Linh bé' }
+  ],
+  types: ['Mới', 'Cũ'],
+  groups: ['Bác sĩ', 'NPP / Đại lý', 'Khác'],
+  directions: ['Seller', 'Dealer', 'KOL/KOC', 'Chuyên môn', 'Chưa rõ'],
+  levels: ['A – Cao', 'B – Tiềm năng', 'C – Nuôi dưỡng']
+};
+const REQUIRED = { sale: 'Sale', team: 'Team', type: 'Khách mới/cũ', name: 'Họ và tên', phone: 'Số điện thoại', group: 'Nhóm khách' };
+const KEEP = ['sale', 'team', 'date'];
+const configured = WEB_APP_URL.startsWith('https://');
+
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+
+function today() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function fillSelect(sel, items) {
+  const cur = sel.value || store.get('rcd_' + sel.id) || '';
+  sel.innerHTML = '<option value="">– Chọn –</option>' + items.map(v => `<option>${esc(v)}</option>`).join('');
+  if (items.includes(cur)) sel.value = cur;
+}
+function fillPills(box, items) {
+  const name = box.dataset.name;
+  const cur = pillValue(name);
+  box.innerHTML = items.map((v, i) => {
+    const id = `${name}_${i}`;
+    return `<input type="radio" name="${name}" id="${id}" value="${esc(v)}"${v === cur ? ' checked' : ''}><label for="${id}">${esc(v)}</label>`;
+  }).join('');
+}
+function pillValue(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : '';
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+let SALES = DEFAULTS.sales;
+function setTeam() {
+  const s = SALES.find(x => x.name === $('sale').value);
+  const team = s ? s.team : '';
+  $('team').value = team;
+  const box = $('teamBox');
+  box.textContent = team || 'Chọn tên sale để hiện team';
+  box.className = team ? 'teambox' : 'teambox empty';
+}
+function applyConfig(c) {
+  SALES = c.sales;
+  fillSelect($('sale'), SALES.map(x => x.name));
+  setTeam();
+  fillPills($('type'), c.types);
+  fillPills($('group'), c.groups);
+  fillPills($('direction'), c.directions);
+  fillPills($('level'), c.levels);
+}
+
+async function loadConfig() {
+  applyConfig(DEFAULTS);
+  if (!configured) return;
+  try {
+    const r = await fetch(`${WEB_APP_URL}?action=config&key=${encodeURIComponent(API_KEY)}`);
+    const c = await r.json();
+    if (c.ok) applyConfig({
+      sales: c.sales && c.sales.length ? c.sales : DEFAULTS.sales,
+      types: c.types.length ? c.types : DEFAULTS.types,
+      groups: c.groups.length ? c.groups : DEFAULTS.groups,
+      directions: c.directions.length ? c.directions : DEFAULTS.directions,
+      levels: c.levels.length ? c.levels : DEFAULTS.levels
+    });
+  } catch (e) { /* dùng danh sách mặc định */ }
+}
+
+function collect() {
+  const v = (id) => $(id).value.trim();
+  return {
+    key: API_KEY, date: v('date'), sale: v('sale'), team: v('team'),
+    type: pillValue('type'), name: v('name'), phone: v('phone').replace(/[\s.\-]/g, ''),
+    group: pillValue('group'), title: v('title'), org: v('org'), city: v('city'),
+    contact: v('contact'), need: v('need'), direction: pillValue('direction'), level: pillValue('level'),
+    wholesale: v('wholesale').replace(/[^\d]/g, ''), retail: v('retail').replace(/[^\d]/g, ''), note: v('note')
+  };
+}
+
+function validate(d) {
+  document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+  const missing = [];
+  for (const k in REQUIRED) {
+    if (!d[k]) {
+      missing.push(REQUIRED[k]);
+      const el = $(k);
+      if (el) el.classList.add('invalid');
+    }
+  }
+  if (d.phone && !/^\+?\d{8,12}$/.test(d.phone)) {
+    missing.push('SĐT không hợp lệ');
+    $('phone').classList.add('invalid');
+  }
+  return missing;
+}
+
+let toastTimer;
+function toast(msg, type) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, type === 'ok' ? 2500 : 5000);
+}
+
+function resetForm() {
+  const keep = {};
+  KEEP.forEach(k => keep[k] = $(k).value);
+  $('f').reset();
+  KEEP.forEach(k => $(k).value = keep[k]);
+  const b = $('phoneBadge'); b.className = 'badge'; b.textContent = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+let checkSeq = 0;
+async function checkPhone() {
+  const phone = $('phone').value.replace(/[\s.\-]/g, '');
+  const b = $('phoneBadge');
+  if (!configured || phone.length < 8) { b.className = 'badge'; return; }
+  const seq = ++checkSeq;
+  try {
+    const r = await fetch(`${WEB_APP_URL}?action=check&key=${encodeURIComponent(API_KEY)}&phone=${encodeURIComponent(phone)}`);
+    const c = await r.json();
+    if (seq !== checkSeq || !c.ok) return;
+    if (c.status === 'duplicate') { b.textContent = '⚠ SĐT này đã được ghi nhận trước đó'; b.className = 'badge show warn'; }
+    else if (c.status === 'invited') { b.textContent = 'Khách cũ có trong danh sách được mời'; b.className = 'badge show info'; }
+    else if (c.status === 'new') { b.textContent = 'Chưa có trong dữ liệu'; b.className = 'badge show ok'; }
+    else b.className = 'badge';
+  } catch (e) { b.className = 'badge'; }
+}
+
+async function submit() {
+  const d = collect();
+  const missing = validate(d);
+  if (missing.length) { toast('Thiếu: ' + missing.join(', '), 'err'); return; }
+  if (!configured) { toast('Chưa cấu hình WEB_APP_URL', 'err'); return; }
+
+  const btn = $('submit');
+  btn.disabled = true; btn.textContent = 'Đang gửi…';
+  try {
+    const r = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(d)
+    });
+    const res = await r.json();
+    if (!res.ok) throw new Error(res.error || 'Không lưu được');
+    const n = Number(store.get('rcd_count') || 0) + 1;
+    store.set('rcd_count', String(n)); $('count').textContent = n;
+    toast(`✔ Đã lưu: ${d.name}`, 'ok');
+    resetForm();
+  } catch (e) {
+    toast('Gửi lỗi, kiểm tra mạng rồi bấm GỬI lại. Thông tin vẫn còn trên phiếu. (' + e.message + ')', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'GỬI PHIẾU';
+  }
+}
+
+// Khởi tạo
+$('setup').style.display = configured ? 'none' : 'block';
+$('date').value = today();
+$('count').textContent = store.get('rcd_count') || '0';
+loadConfig();
+
+$('sale').addEventListener('change', e => { store.set('rcd_sale', e.target.value); setTeam(); });
+$('phone').addEventListener('blur', checkPhone);
+$('phone').addEventListener('input', () => { if ($('phone').value.replace(/\D/g, '').length >= 10) checkPhone(); });
+['wholesale', 'retail'].forEach(id => $(id).addEventListener('input', e => {
+  const digits = e.target.value.replace(/[^\d]/g, '');
+  e.target.value = digits ? Number(digits).toLocaleString('vi-VN') : '';
+}));
+document.addEventListener('change', e => { if (e.target.classList) e.target.classList.remove('invalid');
+  const box = e.target.closest && e.target.closest('.pills'); if (box) box.classList.remove('invalid'); });
+$('submit').addEventListener('click', submit);
+</script>
+</body>
+</html>
